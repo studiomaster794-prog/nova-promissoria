@@ -1280,4 +1280,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-salvar-edicao').addEventListener('click', salvarEdicao);
     document.getElementById('btn-cancelar-edicao').addEventListener('click', fecharModalEdicao);
     document.getElementById('btn-close-edicao').addEventListener('click', fecharModalEdicao);
+
+    // Máscaras de CPF e Telefone
+    document.getElementById('edit-cpf').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '').slice(0, 11);
+        if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+        else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+        else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+        this.value = v;
+    });
+
+    document.getElementById('edit-telefone').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '').slice(0, 11);
+        if (v.length > 10) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        else if (v.length > 6) v = v.replace(/(\d{2})(\d{4,5})(\d{0,4})/, '($1) $2-$3');
+        else if (v.length > 2) v = v.replace(/(\d{2})(\d+)/, '($1) $2');
+        this.value = v;
+    });
 });
