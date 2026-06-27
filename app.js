@@ -300,6 +300,112 @@ function getClienteFinanceiro(cliente) {
 // ==========================================================================
 
 // Preenche a tabela principal e dashboard
+function updateGraficoTopMeses() {
+    const totais = {};
+    state.clientes.forEach(c => {
+        if (!c.venda.dataVenda) return;
+        const chave = c.venda.dataVenda.slice(0, 7);
+        totais[chave] = (totais[chave] || 0) + (parseFloat(c.venda.valor) || 0);
+    });
+
+    const top6 = Object.entries(totais)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+
+    const canvas = document.getElementById('grafico-top-meses');
+    if (!canvas) return;
+
+    if (top6.length === 0) {
+        canvas.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:1rem;font-size:0.8rem;">Nenhuma venda registrada ainda.</p>';
+        return;
+    }
+
+    const W = canvas.clientWidth || 600, H = 140;
+    const pad = { top: 10, right: 16, bottom: 36, left: 70 };
+    const chartW = W - pad.left - pad.right;
+    const chartH = H - pad.top - pad.bottom;
+    const maxVal = top6[0][1];
+    const barW = Math.min(48, (chartW / top6.length) * 0.6);
+    const gap = chartW / top6.length;
+
+    const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    const fmtLabel = chave => {
+        const [ano, mes] = chave.split('-');
+        return mesesNomes[parseInt(mes) - 1].slice(0, 3) + '/' + ano.slice(2);
+    };
+
+    // Linhas de grade (3 linhas)
+    let gridLines = '', gridLabels = '';
+    for (let i = 1; i <= 3; i++) {
+        const val = (maxVal / 3) * i;
+        const y = pad.top + chartH - (val / maxVal) * chartH;
+        gridLines += `<line x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+        gridLabels += `<text x="${pad.left - 6}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="9">${fmt(val)}</text>`;
+    }
+
+    // Barras
+    let bars = '';
+    top6.forEach(([chave, val], i) => {
+        const x = pad.left + i * gap + gap / 2 - barW / 2;
+        const barH = (val / maxVal) * chartH;
+        const y = pad.top + chartH - barH;
+        const cor = i === 0 ? '#3b82f6' : 'rgba(59,130,246,0.5)';
+        bars += `
+            <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="${cor}"/>
+            <text x="${x + barW / 2}" y="${y - 4}" text-anchor="middle" fill="#cbd5e1" font-size="9">${fmt(val)}</text>
+            <text x="${x + barW / 2}" y="${H - 6}" text-anchor="middle" fill="#94a3b8" font-size="10">${fmtLabel(chave)}</text>
+        `;
+    });
+
+    canvas.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        ${gridLines}${gridLabels}${bars}
+    </svg>`;
+}
+
+function updateDashboard() {
+
+let mesSelecionado = new Date().getMonth();
+let anoSelecionado  = new Date().getFullYear();
+
+const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function updateResumoMensal() {
+    const mes = mesSelecionado;
+    const ano = anoSelecionado;
+
+    document.getElementById('dash-mes-label').textContent = `${mesesNomes[mes]} / ${ano}`;
+
+    let vendido = 0, recebido = 0, qtd = 0;
+
+    state.clientes.forEach(cliente => {
+        // Vendas do mês (pela data da venda)
+        if (cliente.venda.dataVenda) {
+            const d = new Date(cliente.venda.dataVenda + 'T00:00:00');
+            if (d.getMonth() === mes && d.getFullYear() === ano) {
+                vendido += parseFloat(cliente.venda.valor) || 0;
+                qtd++;
+            }
+        }
+        // Recebidos no mês: entrada inicial + pagamentos
+        const entradaDate = cliente.venda.dataVenda ? new Date(cliente.venda.dataVenda + 'T00:00:00') : null;
+        if (entradaDate && entradaDate.getMonth() === mes && entradaDate.getFullYear() === ano) {
+            recebido += parseFloat(cliente.venda.entrada) || 0;
+        }
+        (cliente.pagamentos || []).forEach(pag => {
+            if (pag.data) {
+                const pd = new Date(pag.data + 'T00:00:00');
+                if (pd.getMonth() === mes && pd.getFullYear() === ano) {
+                    recebido += parseFloat(pag.valor) || 0;
+                }
+            }
+        });
+    });
+
+    document.getElementById('dash-mes-vendido').textContent  = formatCurrency(vendido);
+    document.getElementById('dash-mes-recebido').textContent = formatCurrency(recebido);
+    document.getElementById('dash-mes-qtd').textContent      = qtd;
+}
+
 function updateDashboard() {
     let totalVendido = 0;
     let totalRecebido = 0;
@@ -317,6 +423,9 @@ function updateDashboard() {
     elements.dashTotalRecebido.textContent = formatCurrency(totalRecebido);
     elements.dashTotalAberto.textContent = formatCurrency(totalAberto);
     elements.dashTotalClientes.textContent = totalClientes;
+
+    updateResumoMensal();
+    updateGraficoTopMeses();
 
     // Transações Recentes (últimos 5)
     // Clonamos a lista, ordenamos por ID de forma decrescente para pegar os mais novos
@@ -1270,6 +1379,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Atualiza dashboard inicial
     updateDashboard();
+
+    // Navegação mensal
+    document.getElementById('btn-mes-anterior').addEventListener('click', () => {
+        mesSelecionado--;
+        if (mesSelecionado < 0) { mesSelecionado = 11; anoSelecionado--; }
+        updateResumoMensal();
+    });
+    document.getElementById('btn-mes-proximo').addEventListener('click', () => {
+        mesSelecionado++;
+        if (mesSelecionado > 11) { mesSelecionado = 0; anoSelecionado++; }
+        updateResumoMensal();
+    });
 
     // Botões de edição do modal de detalhes
     document.getElementById('btn-editar-dados').addEventListener('click', () => {
