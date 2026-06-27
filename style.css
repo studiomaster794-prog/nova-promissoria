@@ -691,9 +691,9 @@ select:focus-visible, textarea:focus-visible {
 }
 
 .table th, .table td {
-    padding: 1rem 1.25rem;
+    padding: 0.55rem 0.75rem;
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.95rem;
+    font-size: 0.82rem;
 }
 
 .table th {
@@ -701,7 +701,7 @@ select:focus-visible, textarea:focus-visible {
     color: var(--text-secondary);
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     letter-spacing: 0.5px;
 }
 
@@ -861,16 +861,17 @@ select:focus-visible, textarea:focus-visible {
 }
 
 .btn-small {
-    padding: 0.4rem 0.85rem;
-    font-size: 0.8rem;
+    padding: 0.28rem 0.6rem;
+    font-size: 0.74rem;
     border-radius: var(--radius-sm);
 }
 
 .btn-icon-only {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border-radius: var(--radius-sm);
+    font-size: 0.82rem;
 }
 
 .btn-icon-only svg {
