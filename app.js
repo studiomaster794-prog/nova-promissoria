@@ -362,8 +362,6 @@ function updateGraficoTopMeses() {
     </svg>`;
 }
 
-function updateDashboard() {
-
 let mesSelecionado = new Date().getMonth();
 let anoSelecionado  = new Date().getFullYear();
 
