@@ -122,6 +122,19 @@
     #modal-details .btn-small { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
     #modal-details table { font-size: 0.78rem; }
     #modal-details th, #modal-details td { padding: 0.35rem 0.5rem; }
+    /* === CARD RESUMO MENSAL === */
+    .card-mensal { padding: 0.7rem 1rem; margin-bottom: 0; }
+    .mensal-header { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.6rem; }
+    .mes-label { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); min-width: 140px; text-align: center; text-transform: capitalize; }
+    .btn-mes { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: 6px; width: 26px; height: 26px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .btn-mes:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .mensal-grid { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .mensal-item { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+    .mensal-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; }
+    .mensal-valor { font-size: 1.05rem; font-weight: 700; }
+    .mensal-valor.vendido { color: var(--accent-primary, #3b82f6); }
+    .mensal-valor.recebido { color: var(--color-success, #22c55e); }
+    .mensal-valor.neutro { color: var(--text-primary); }
     </style>
 </head>
 <body>
@@ -251,6 +264,37 @@
                             <p class="stat-value" id="dash-total-clientes">0</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- RESUMO MENSAL -->
+                <div class="card card-mensal">
+                    <div class="mensal-header">
+                        <button class="btn-mes" id="btn-mes-anterior">&#8592;</button>
+                        <span id="dash-mes-label" class="mes-label"></span>
+                        <button class="btn-mes" id="btn-mes-proximo">&#8594;</button>
+                    </div>
+                    <div class="mensal-grid">
+                        <div class="mensal-item">
+                            <span class="mensal-label">Vendido no mês</span>
+                            <span class="mensal-valor vendido" id="dash-mes-vendido">R$ 0,00</span>
+                        </div>
+                        <div class="mensal-item">
+                            <span class="mensal-label">Recebido no mês</span>
+                            <span class="mensal-valor recebido" id="dash-mes-recebido">R$ 0,00</span>
+                        </div>
+                        <div class="mensal-item">
+                            <span class="mensal-label">Vendas realizadas</span>
+                            <span class="mensal-valor neutro" id="dash-mes-qtd">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO TOP 6 MESES -->
+                <div class="card" style="padding: 1rem 1.25rem;">
+                    <div style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">
+                        🏆 Top 6 Meses — Maior Volume de Vendas
+                    </div>
+                    <div id="grafico-top-meses" style="width:100%;"></div>
                 </div>
 
                 <!-- TABELA DE RESUMO E CLIENTES RECENTES -->
@@ -1082,10 +1126,10 @@
     </script>
 
     <!-- JavaScript Principal -->
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
+        navigator.serviceWorker.register('./sw.js');
       }
     </script>
 </body>
